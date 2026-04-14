@@ -1,0 +1,68 @@
+# ── Provider Definitions ────────────────────────────────────
+# Each block defines an endpoint (type, base_url, auth).
+# Providers are referenced by name in cascades and can be
+# reused with different models.
+
+[providers.openai]
+type = "openai"
+api_key_service = "openai"
+api_key_env = "OPENAI_API_KEY"
+# base_url defaults to https://api.openai.com/v1
+
+[providers.anthropic]
+type = "anthropic"
+api_key_service = "anthropic"
+api_key_env = "ANTHROPIC_API_KEY"
+# base_url defaults to https://api.anthropic.com
+
+[providers.gemini]
+type = "gemini"
+api_key_service = "gemini"
+api_key_env = "GOOGLE_API_KEY"
+# base_url defaults to https://generativelanguage.googleapis.com
+
+[providers.groq]
+type = "openai"
+base_url = "https://api.groq.com/openai/v1"
+api_key_service = "groq"
+api_key_env = "GROQ_API_KEY"
+
+[providers.ollama]
+type = "ollama"
+base_url = "http://localhost:11434"
+# No API key needed
+
+# ── Cascades ───────────────────────────────────────────────
+# Each entry references a provider by name and specifies a model.
+# The same provider can appear multiple times with different models.
+
+[cascades.creative_task]
+entries = [
+    { provider = "openai", model = "gpt-4o" },
+    { provider = "anthropic", model = "claude-sonnet-4-20250514" },
+    { provider = "gemini", model = "gemini-2.0-flash" },
+]
+
+[cascades.fast_task]
+entries = [
+    { provider = "ollama", model = "llama3" },
+    { provider = "groq", model = "llama-3.3-70b-versatile" },
+    { provider = "openai", model = "gpt-4o-mini" },
+]
+
+[cascades.resilient_task]
+entries = [
+    { provider = "openai", model = "gpt-4o" },
+    { provider = "openai", model = "gpt-4o-mini" },
+    { provider = "groq", model = "llama-3.3-70b-versatile" },
+    { provider = "anthropic", model = "claude-sonnet-4-20250514" },
+    { provider = "ollama", model = "llama3" },
+]
+
+# ── Persistence ────────────────────────────────────────────
+
+[database]
+path = "~/.local/share/llm-cascade/db.sqlite"
+
+[failure_persistence]
+dir = "~/.local/share/llm-cascade/failed_prompts"
