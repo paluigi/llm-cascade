@@ -1,3 +1,5 @@
+//! Anthropic Messages API provider.
+
 use reqwest::Client;
 use serde_json::{json, Value};
 
@@ -7,6 +9,7 @@ use crate::providers::LlmProvider;
 
 const DEFAULT_BASE_URL: &str = "https://api.anthropic.com";
 
+/// Provider for the Anthropic Messages API.
 pub struct AnthropicProvider {
     client: Client,
     api_key: String,
@@ -15,6 +18,7 @@ pub struct AnthropicProvider {
 }
 
 impl AnthropicProvider {
+    /// Creates a new Anthropic provider.
     pub fn new(api_key: String, model: String, base_url: Option<String>) -> Self {
         Self {
             client: Client::new(),

@@ -1,3 +1,5 @@
+//! Data models for conversations, messages, responses, and tool definitions.
+
 pub mod conversation;
 pub mod response;
 pub mod tool;

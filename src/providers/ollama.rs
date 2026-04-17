@@ -1,3 +1,5 @@
+//! Ollama local inference provider.
+
 use reqwest::Client;
 use serde_json::{json, Value};
 
@@ -5,6 +7,7 @@ use crate::error::ProviderError;
 use crate::models::{ContentBlock, Conversation, LlmResponse, MessageRole};
 use crate::providers::LlmProvider;
 
+/// Provider for a local Ollama inference server. No API key required.
 pub struct OllamaProvider {
     client: Client,
     base_url: String,
@@ -12,6 +15,7 @@ pub struct OllamaProvider {
 }
 
 impl OllamaProvider {
+    /// Creates a new Ollama provider.
     pub fn new(model: String, base_url: Option<String>) -> Self {
         Self {
             client: Client::new(),

@@ -1,3 +1,5 @@
+//! OpenAI Chat Completions API provider (and compatible endpoints).
+
 use reqwest::Client;
 use serde_json::{json, Value};
 
@@ -7,6 +9,7 @@ use crate::providers::LlmProvider;
 
 const DEFAULT_BASE_URL: &str = "https://api.openai.com/v1";
 
+/// Provider for the OpenAI Chat Completions API and any compatible endpoint (Groq, Together, vLLM, etc.).
 pub struct OpenAiProvider {
     client: Client,
     api_key: String,
@@ -15,6 +18,7 @@ pub struct OpenAiProvider {
 }
 
 impl OpenAiProvider {
+    /// Creates a new OpenAI-compatible provider.
     pub fn new(api_key: String, model: String, base_url: Option<String>) -> Self {
         Self {
             client: Client::new(),

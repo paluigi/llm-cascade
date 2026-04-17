@@ -68,7 +68,7 @@
 ### From source
 
 ```sh
-git clone https://github.com/[owner]/llm-cascade.git
+git clone https://github.com/paluigi/llm-cascade.git
 cd llm-cascade
 cargo install --path .
 ```
@@ -78,7 +78,7 @@ cargo install --path .
 ```toml
 # Cargo.toml
 [dependencies]
-llm-cascade = { git = "https://github.com/[owner]/llm-cascade.git", branch = "main" }
+llm-cascade = "0.1"
 ```
 
 > Requires Rust **1.85+** (edition 2024).
@@ -415,7 +415,7 @@ Cooldowns are **per entry** (e.g., `openai/gpt-4o` can be on cooldown while `ope
 - [ ] Prometheus metrics export
 - [ ] Web dashboard for cooldown/attempt monitoring
 - [ ] Additional native providers (Mistral, Cohere, AWS Bedrock, Azure OpenAI)
-- [ ] Published crate on crates.io
+- [x] Published crate on crates.io
 
 ---
 
@@ -426,7 +426,7 @@ Contributions are welcome! This is an open-source project under the MIT license.
 ### Getting started
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/[your-username]/llm-cascade.git`
+2. Clone your fork: `git clone https://github.com/paluigi/llm-cascade.git`
 3. Create a branch: `git checkout -b feature/your-feature`
 4. Build and test: `cargo build && cargo clippy -- -D warnings`
 
@@ -444,7 +444,7 @@ Contributions are welcome! This is an open-source project under the MIT license.
 
 ### Reporting issues
 
-Use the [GitHub issue tracker](https://github.com/[owner]/llm-cascade/issues) to report bugs, request features, or ask questions. Please include:
+Use the [GitHub issue tracker](https://github.com/paluigi/llm-cascade/issues) to report bugs, request features, or ask questions. Please include:
 
 - Rust version (`rustc --version`)
 - OS and version

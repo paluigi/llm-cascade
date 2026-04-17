@@ -1,3 +1,5 @@
+//! Cascade execution engine: iterates provider entries with failover and cooldown.
+
 use std::time::Instant;
 
 use chrono::{Duration, Utc};
@@ -72,6 +74,11 @@ fn query_cooldown_level(entry_key: &str, conn: &Connection) -> u32 {
     }
 }
 
+/// Runs the named cascade, trying each provider/model entry in order.
+///
+/// Skips entries that are on cooldown. On success, logs the attempt and returns the response.
+/// On failure, sets a cooldown and continues to the next entry. If all entries fail,
+/// persists the conversation to a JSON file and returns a [`CascadeError`].
 pub async fn run_cascade(
     cascade_name: &str,
     conversation: &Conversation,

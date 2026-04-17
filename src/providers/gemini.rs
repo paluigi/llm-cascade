@@ -1,3 +1,5 @@
+//! Google Gemini generateContent API provider.
+
 use reqwest::Client;
 use serde_json::{json, Value};
 
@@ -7,6 +9,7 @@ use crate::providers::LlmProvider;
 
 const DEFAULT_BASE_URL: &str = "https://generativelanguage.googleapis.com";
 
+/// Provider for the Google Gemini generateContent API.
 pub struct GeminiProvider {
     client: Client,
     api_key: String,
@@ -15,6 +18,7 @@ pub struct GeminiProvider {
 }
 
 impl GeminiProvider {
+    /// Creates a new Gemini provider.
     pub fn new(api_key: String, model: String, base_url: Option<String>) -> Self {
         Self {
             client: Client::new(),

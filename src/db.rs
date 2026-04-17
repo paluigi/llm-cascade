@@ -1,8 +1,13 @@
+//! SQLite-backed persistence for attempt logs and cooldown state.
+
 use chrono::Utc;
 use rusqlite::{params, Connection};
 
 use crate::config::expand_tilde;
 
+/// Opens (or creates) the SQLite database and ensures the schema exists.
+///
+/// Expands `~` in the path and creates parent directories if needed.
 pub fn init_db(path: &str) -> Result<Connection, String> {
     let expanded = expand_tilde(path);
     if let Some(parent) = expanded.parent() {
@@ -40,6 +45,7 @@ pub fn init_db(path: &str) -> Result<Connection, String> {
     Ok(conn)
 }
 
+/// Inserts a row into the `attempt_log` table.
 pub fn log_attempt(
     conn: &Connection,
     cascade_name: &str,
@@ -69,6 +75,7 @@ pub fn log_attempt(
     }
 }
 
+/// Returns `true` if the given provider/model entry is currently on cooldown.
 pub fn is_on_cooldown(conn: &Connection, provider_model: &str) -> bool {
     let now = Utc::now().to_rfc3339();
     let result = conn.query_row(
@@ -87,6 +94,7 @@ pub fn is_on_cooldown(conn: &Connection, provider_model: &str) -> bool {
     }
 }
 
+/// Sets or updates the cooldown for a provider/model entry until the given RFC 3339 timestamp.
 pub fn set_cooldown(conn: &Connection, provider_model: &str, cooldown_until: &str) {
     let result = conn.execute(
         "INSERT INTO cooldown (provider_model, cooldown_until) VALUES (?1, ?2)

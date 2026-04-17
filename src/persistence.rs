@@ -1,3 +1,5 @@
+//! Persistence of failed conversations to JSON files.
+
 use std::io::Write;
 use std::path::PathBuf;
 
@@ -14,6 +16,9 @@ struct FailedConversationEnvelope<'a> {
     conversation: &'a Conversation,
 }
 
+/// Saves a failed conversation as a timestamped JSON file.
+///
+/// Returns the path to the saved file. Creates the directory if it doesn't exist.
 pub fn save_failed_conversation(
     conversation: &Conversation,
     dir: &str,
