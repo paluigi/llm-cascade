@@ -8,7 +8,7 @@ license = "MIT"
 repository = "https://github.com/paluigi/llm-cascade"
 documentation = "https://docs.rs/llm-cascade"
 readme = "README.md"
-keywords = ["llm", "ai", "cascade", "failover", "openai", "anthropic", "gemini", "ollama"]
+keywords = ["llm", "cascade", "failover", "openai", "anthropic"]
 categories = ["asynchronous", "web-programming::http-client"]
 exclude = [".claude/", ".kilo/", "config.example.toml"]
 
