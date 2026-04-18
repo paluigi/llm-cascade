@@ -10,11 +10,11 @@ use crate::db;
 use crate::error::{CascadeError, ProviderError};
 use crate::models::{Conversation, LlmResponse};
 use crate::persistence;
+use crate::providers::LlmProvider;
 use crate::providers::anthropic::AnthropicProvider;
 use crate::providers::gemini::GeminiProvider;
 use crate::providers::ollama::OllamaProvider;
 use crate::providers::openai::OpenAiProvider;
-use crate::providers::LlmProvider;
 use crate::secrets;
 
 const BASE_COOLDOWN_SECS: i64 = 30;
@@ -27,29 +27,60 @@ fn build_provider(
 ) -> Result<Box<dyn LlmProvider>, ProviderError> {
     match provider_config.r#type {
         ProviderType::Openai => {
-            let service = provider_config.api_key_service.as_deref().unwrap_or(provider_name);
-            let env_var = provider_config.api_key_env.as_deref().unwrap_or("OPENAI_API_KEY");
+            let service = provider_config
+                .api_key_service
+                .as_deref()
+                .unwrap_or(provider_name);
+            let env_var = provider_config
+                .api_key_env
+                .as_deref()
+                .unwrap_or("OPENAI_API_KEY");
             let api_key = secrets::resolve_api_key(service, env_var)
                 .map_err(|_| ProviderError::MissingApiKey(provider_name.into()))?;
-            Ok(Box::new(OpenAiProvider::new(api_key, model.into(), provider_config.base_url.clone())))
+            Ok(Box::new(OpenAiProvider::new(
+                api_key,
+                model.into(),
+                provider_config.base_url.clone(),
+            )))
         }
         ProviderType::Anthropic => {
-            let service = provider_config.api_key_service.as_deref().unwrap_or(provider_name);
-            let env_var = provider_config.api_key_env.as_deref().unwrap_or("ANTHROPIC_API_KEY");
+            let service = provider_config
+                .api_key_service
+                .as_deref()
+                .unwrap_or(provider_name);
+            let env_var = provider_config
+                .api_key_env
+                .as_deref()
+                .unwrap_or("ANTHROPIC_API_KEY");
             let api_key = secrets::resolve_api_key(service, env_var)
                 .map_err(|_| ProviderError::MissingApiKey(provider_name.into()))?;
-            Ok(Box::new(AnthropicProvider::new(api_key, model.into(), provider_config.base_url.clone())))
+            Ok(Box::new(AnthropicProvider::new(
+                api_key,
+                model.into(),
+                provider_config.base_url.clone(),
+            )))
         }
         ProviderType::Gemini => {
-            let service = provider_config.api_key_service.as_deref().unwrap_or(provider_name);
-            let env_var = provider_config.api_key_env.as_deref().unwrap_or("GOOGLE_API_KEY");
+            let service = provider_config
+                .api_key_service
+                .as_deref()
+                .unwrap_or(provider_name);
+            let env_var = provider_config
+                .api_key_env
+                .as_deref()
+                .unwrap_or("GOOGLE_API_KEY");
             let api_key = secrets::resolve_api_key(service, env_var)
                 .map_err(|_| ProviderError::MissingApiKey(provider_name.into()))?;
-            Ok(Box::new(GeminiProvider::new(api_key, model.into(), provider_config.base_url.clone())))
+            Ok(Box::new(GeminiProvider::new(
+                api_key,
+                model.into(),
+                provider_config.base_url.clone(),
+            )))
         }
-        ProviderType::Ollama => {
-            Ok(Box::new(OllamaProvider::new(model.into(), provider_config.base_url.clone())))
-        }
+        ProviderType::Ollama => Ok(Box::new(OllamaProvider::new(
+            model.into(),
+            provider_config.base_url.clone(),
+        ))),
     }
 }
 
@@ -85,15 +116,18 @@ pub async fn run_cascade(
     config: &AppConfig,
     conn: &Connection,
 ) -> Result<LlmResponse, CascadeError> {
-    let cascade = config.cascades.get(cascade_name).ok_or_else(|| CascadeError {
-        cascade_name: cascade_name.to_string(),
-        message: format!("Cascade '{}' not found in configuration", cascade_name),
-        failed_prompt_path: persistence::save_failed_conversation(
-            conversation,
-            &config.failure_persistence.dir,
-            cascade_name,
-        ),
-    })?;
+    let cascade = config
+        .cascades
+        .get(cascade_name)
+        .ok_or_else(|| CascadeError {
+            cascade_name: cascade_name.to_string(),
+            message: format!("Cascade '{}' not found in configuration", cascade_name),
+            failed_prompt_path: persistence::save_failed_conversation(
+                conversation,
+                &config.failure_persistence.dir,
+                cascade_name,
+            ),
+        })?;
 
     if cascade.entries.is_empty() {
         let path = persistence::save_failed_conversation(
@@ -120,7 +154,10 @@ pub async fn run_cascade(
                     entry.provider,
                     cascade_name,
                 );
-                errors.push(format!("{}/{}: provider not found", entry.provider, entry.model));
+                errors.push(format!(
+                    "{}/{}: provider not found",
+                    entry.provider, entry.model
+                ));
                 continue;
             }
         };

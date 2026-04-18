@@ -1,7 +1,7 @@
 //! Google Gemini generateContent API provider.
 
 use reqwest::Client;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::error::ProviderError;
 use crate::models::{ContentBlock, Conversation, LlmResponse, MessageRole};
@@ -78,13 +78,16 @@ impl LlmProvider for GeminiProvider {
         }
 
         if let Some(ref tools) = conversation.tools {
-            let function_declarations: Vec<Value> = tools.iter().map(|t| {
-                json!({
-                    "name": t.name,
-                    "description": t.description,
-                    "parameters": t.parameters,
+            let function_declarations: Vec<Value> = tools
+                .iter()
+                .map(|t| {
+                    json!({
+                        "name": t.name,
+                        "description": t.description,
+                        "parameters": t.parameters,
+                    })
                 })
-            }).collect();
+                .collect();
             body["tools"] = json!([{ "functionDeclarations": function_declarations }]);
         }
 
@@ -112,7 +115,10 @@ impl LlmProvider for GeminiProvider {
             });
         }
 
-        let data: Value = response.json().await.map_err(|e| ProviderError::Parse(e.to_string()))?;
+        let data: Value = response
+            .json()
+            .await
+            .map_err(|e| ProviderError::Parse(e.to_string()))?;
 
         let mut content_blocks = Vec::new();
 
@@ -122,13 +128,22 @@ impl LlmProvider for GeminiProvider {
         {
             for part in parts {
                 if let Some(text) = part["text"].as_str() {
-                    content_blocks.push(ContentBlock::Text { text: text.to_string() });
+                    content_blocks.push(ContentBlock::Text {
+                        text: text.to_string(),
+                    });
                 }
                 if let Some(fc) = part.get("functionCall") {
                     let name = fc["name"].as_str().unwrap_or("").to_string();
                     let args = fc["args"].to_string();
-                    let id = format!("call_{}", serde_json::to_string(&fc).map(|s| s.len()).unwrap_or(0));
-                    content_blocks.push(ContentBlock::ToolCall { id, name, arguments: args });
+                    let id = format!(
+                        "call_{}",
+                        serde_json::to_string(&fc).map(|s| s.len()).unwrap_or(0)
+                    );
+                    content_blocks.push(ContentBlock::ToolCall {
+                        id,
+                        name,
+                        arguments: args,
+                    });
                 }
             }
         }

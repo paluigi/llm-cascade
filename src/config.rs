@@ -3,10 +3,10 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// Top-level application configuration.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct AppConfig {
     /// Named provider definitions (keyed by provider name).
     #[serde(default)]
@@ -23,7 +23,7 @@ pub struct AppConfig {
 }
 
 /// Configuration for a single LLM provider endpoint.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ProviderConfig {
     /// The provider protocol type.
     pub r#type: ProviderType,
@@ -39,7 +39,7 @@ pub struct ProviderConfig {
 }
 
 /// Supported provider protocol types.
-#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum ProviderType {
     /// OpenAI Chat Completions API (and compatible endpoints like Groq, Together, vLLM).
@@ -53,7 +53,7 @@ pub enum ProviderType {
 }
 
 /// A single entry in a cascade, referencing a provider and model.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CascadeEntry {
     /// The provider name (must match a key in `[providers]`).
     pub provider: String,
@@ -62,14 +62,14 @@ pub struct CascadeEntry {
 }
 
 /// An ordered list of provider/model entries to try in sequence.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CascadeConfig {
     /// The cascade entries, tried in order until one succeeds.
     pub entries: Vec<CascadeEntry>,
 }
 
 /// SQLite database path configuration.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct DatabaseConfig {
     /// Path to the SQLite database file. Tilde (`~`) is expanded.
     #[serde(default = "default_db_path")]
@@ -82,12 +82,14 @@ fn default_db_path() -> String {
 
 impl Default for DatabaseConfig {
     fn default() -> Self {
-        Self { path: default_db_path() }
+        Self {
+            path: default_db_path(),
+        }
     }
 }
 
 /// Failed prompt persistence directory configuration.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct FailureConfig {
     /// Directory where failed conversation `.json` files are saved. Tilde is expanded.
     #[serde(default = "default_failure_dir")]
@@ -100,7 +102,9 @@ fn default_failure_dir() -> String {
 
 impl Default for FailureConfig {
     fn default() -> Self {
-        Self { dir: default_failure_dir() }
+        Self {
+            dir: default_failure_dir(),
+        }
     }
 }
 

@@ -1,7 +1,7 @@
 //! Anthropic Messages API provider.
 
 use reqwest::Client;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::error::ProviderError;
 use crate::models::{ContentBlock, Conversation, LlmResponse, MessageRole};
@@ -77,20 +77,20 @@ impl LlmProvider for AnthropicProvider {
         }
 
         if let Some(ref tools) = conversation.tools {
-            let anthropic_tools: Vec<Value> = tools.iter().map(|t| {
-                json!({
-                    "name": t.name,
-                    "description": t.description,
-                    "input_schema": t.parameters,
+            let anthropic_tools: Vec<Value> = tools
+                .iter()
+                .map(|t| {
+                    json!({
+                        "name": t.name,
+                        "description": t.description,
+                        "input_schema": t.parameters,
+                    })
                 })
-            }).collect();
+                .collect();
             body["tools"] = json!(anthropic_tools);
         }
 
-        let url = format!(
-            "{}/v1/messages",
-            self.base_url.trim_end_matches('/')
-        );
+        let url = format!("{}/v1/messages", self.base_url.trim_end_matches('/'));
 
         let response = self
             .client
@@ -118,7 +118,10 @@ impl LlmProvider for AnthropicProvider {
             });
         }
 
-        let data: Value = response.json().await.map_err(|e| ProviderError::Parse(e.to_string()))?;
+        let data: Value = response
+            .json()
+            .await
+            .map_err(|e| ProviderError::Parse(e.to_string()))?;
 
         let mut content_blocks = Vec::new();
 
@@ -134,7 +137,11 @@ impl LlmProvider for AnthropicProvider {
                         let id = block["id"].as_str().unwrap_or("").to_string();
                         let name = block["name"].as_str().unwrap_or("").to_string();
                         let input = block["input"].to_string();
-                        content_blocks.push(ContentBlock::ToolCall { id, name, arguments: input });
+                        content_blocks.push(ContentBlock::ToolCall {
+                            id,
+                            name,
+                            arguments: input,
+                        });
                     }
                     _ => {}
                 }

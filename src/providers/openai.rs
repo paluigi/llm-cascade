@@ -1,7 +1,7 @@
 //! OpenAI Chat Completions API provider (and compatible endpoints).
 
 use reqwest::Client;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::error::ProviderError;
 use crate::models::{ContentBlock, Conversation, LlmResponse, MessageRole};
@@ -60,23 +60,23 @@ impl LlmProvider for OpenAiProvider {
         });
 
         if let Some(ref tools) = conversation.tools {
-            let openai_tools: Vec<Value> = tools.iter().map(|t| {
-                json!({
-                    "type": "function",
-                    "function": {
-                        "name": t.name,
-                        "description": t.description,
-                        "parameters": t.parameters,
-                    }
+            let openai_tools: Vec<Value> = tools
+                .iter()
+                .map(|t| {
+                    json!({
+                        "type": "function",
+                        "function": {
+                            "name": t.name,
+                            "description": t.description,
+                            "parameters": t.parameters,
+                        }
+                    })
                 })
-            }).collect();
+                .collect();
             body["tools"] = json!(openai_tools);
         }
 
-        let url = format!(
-            "{}/chat/completions",
-            self.base_url.trim_end_matches('/')
-        );
+        let url = format!("{}/chat/completions", self.base_url.trim_end_matches('/'));
 
         let response = self
             .client
@@ -102,7 +102,10 @@ impl LlmProvider for OpenAiProvider {
             });
         }
 
-        let data: Value = response.json().await.map_err(|e| ProviderError::Parse(e.to_string()))?;
+        let data: Value = response
+            .json()
+            .await
+            .map_err(|e| ProviderError::Parse(e.to_string()))?;
 
         let choice = data["choices"][0].clone();
         let message = &choice["message"];
@@ -113,7 +116,9 @@ impl LlmProvider for OpenAiProvider {
         if let Some(text) = message["content"].as_str()
             && !text.is_empty()
         {
-            content_blocks.push(ContentBlock::Text { text: text.to_string() });
+            content_blocks.push(ContentBlock::Text {
+                text: text.to_string(),
+            });
         }
 
         if let Some(tool_calls) = message["tool_calls"].as_array() {
@@ -122,7 +127,11 @@ impl LlmProvider for OpenAiProvider {
                 let function = &tc["function"];
                 let name = function["name"].as_str().unwrap_or("").to_string();
                 let arguments = function["arguments"].as_str().unwrap_or("{}").to_string();
-                content_blocks.push(ContentBlock::ToolCall { id, name, arguments });
+                content_blocks.push(ContentBlock::ToolCall {
+                    id,
+                    name,
+                    arguments,
+                });
             }
         }
 

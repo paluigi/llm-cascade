@@ -1,7 +1,7 @@
 //! Ollama local inference provider.
 
 use reqwest::Client;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::error::ProviderError;
 use crate::models::{ContentBlock, Conversation, LlmResponse, MessageRole};
@@ -57,16 +57,19 @@ impl LlmProvider for OllamaProvider {
         });
 
         if let Some(ref tools) = conversation.tools {
-            let ollama_tools: Vec<Value> = tools.iter().map(|t| {
-                json!({
-                    "type": "function",
-                    "function": {
-                        "name": t.name,
-                        "description": t.description,
-                        "parameters": t.parameters,
-                    }
+            let ollama_tools: Vec<Value> = tools
+                .iter()
+                .map(|t| {
+                    json!({
+                        "type": "function",
+                        "function": {
+                            "name": t.name,
+                            "description": t.description,
+                            "parameters": t.parameters,
+                        }
+                    })
                 })
-            }).collect();
+                .collect();
             body["tools"] = json!(ollama_tools);
         }
 
@@ -90,7 +93,10 @@ impl LlmProvider for OllamaProvider {
             });
         }
 
-        let data: Value = response.json().await.map_err(|e| ProviderError::Parse(e.to_string()))?;
+        let data: Value = response
+            .json()
+            .await
+            .map_err(|e| ProviderError::Parse(e.to_string()))?;
 
         let message = &data["message"];
         let mut content_blocks = Vec::new();
@@ -98,7 +104,9 @@ impl LlmProvider for OllamaProvider {
         if let Some(content) = message["content"].as_str()
             && !content.is_empty()
         {
-            content_blocks.push(ContentBlock::Text { text: content.to_string() });
+            content_blocks.push(ContentBlock::Text {
+                text: content.to_string(),
+            });
         }
 
         if let Some(tool_calls) = message["tool_calls"].as_array() {
@@ -107,12 +115,22 @@ impl LlmProvider for OllamaProvider {
                 let name = function["name"].as_str().unwrap_or("").to_string();
                 let arguments = function["arguments"].to_string();
                 let id = tc["id"].as_str().unwrap_or("").to_string();
-                content_blocks.push(ContentBlock::ToolCall { id, name, arguments });
+                content_blocks.push(ContentBlock::ToolCall {
+                    id,
+                    name,
+                    arguments,
+                });
             }
         }
 
-        let eval_count = data.get("eval_count").and_then(|v| v.as_u64()).map(|v| v as u32);
-        let prompt_eval_count = data.get("prompt_eval_count").and_then(|v| v.as_u64()).map(|v| v as u32);
+        let eval_count = data
+            .get("eval_count")
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32);
+        let prompt_eval_count = data
+            .get("prompt_eval_count")
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32);
 
         Ok(LlmResponse {
             content: content_blocks,

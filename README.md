@@ -87,14 +87,19 @@ llm-cascade = "0.1"
 
 ## Configuration
 
-Copy the example config to the default location:
+Run the setup command to scaffold the default configuration:
 
 ```sh
-mkdir -p ~/.config/llm-cascade
-cp config.example.toml ~/.config/llm-cascade/config.toml
+llm-cascade setup
 ```
 
-Edit `~/.config/llm-cascade/config.toml`:
+Or use the interactive wizard to configure providers and cascades step-by-step:
+
+```sh
+llm-cascade setup --interactive
+```
+
+This creates `~/.config/llm-cascade/config.toml` with sensible defaults. Edit it to customize:
 
 ```toml
 # ── Provider Definitions ────────────────────────────────────
@@ -182,26 +187,41 @@ Any provider with `type = "openai"` can be pointed at a custom `base_url` to use
 
 | Method | How it works |
 |--------|-------------|
-| **OS Keyring** (preferred) | Set via `keyring` CLI or your desktop's secret service. The `api_key_service` field is the keyring entry name. |
+| **OS Keyring** (preferred) | Set via `llm-cascade key set <provider>`. The `api_key_service` field is the keyring entry name. |
 | **Environment variable** | Export the variable named in `api_key_env` (e.g., `export OPENAI_API_KEY=sk-...`). |
 | **Ollama** | No API key needed for local models. |
 
-The library tries the keyring first and falls back to the environment variable automatically.
+The library tries the keyring first and falls back to the environment variable automatically. Use `llm-cascade key list` to check the status of all providers.
 
 ---
 
 ## CLI Usage
 
-### Basic prompt
+### Subcommands
 
-```sh
-llm-cascade -C creative_task -p "Write a haiku about Rust"
+`llm-cascade` uses subcommands for all operations:
+
+```
+llm-cascade run       -C <cascade> -p <prompt>   Run a cascade
+llm-cascade setup     [--interactive]              Initialize configuration
+llm-cascade key set   <provider>                   Store an API key
+llm-cascade key get   <provider> [--show-full]     Retrieve an API key
+llm-cascade key list                               Show key status for all providers
+llm-cascade key delete <provider>                   Remove an API key
 ```
 
-### From a JSON conversation file
+### Running a cascade
+
+**Basic prompt:**
 
 ```sh
-llm-cascade -C creative_task -f conversation.json
+llm-cascade run -C creative_task -p "Write a haiku about Rust"
+```
+
+**From a JSON conversation file:**
+
+```sh
+llm-cascade run -C creative_task -f conversation.json
 ```
 
 The JSON file must match the `Conversation` schema:
@@ -228,10 +248,51 @@ The JSON file must match the `Conversation` schema:
 }
 ```
 
-### Custom config path
+**Custom config path:**
 
 ```sh
-llm-cascade -c /path/to/my/config.toml -C fast_task -p "Hello"
+llm-cascade run -c /path/to/my/config.toml -C fast_task -p "Hello"
+```
+
+### Setup
+
+**Default setup** — scaffolds the example config, creates directories, and initializes the database:
+
+```sh
+llm-cascade setup
+```
+
+**Interactive setup** — wizard for selecting providers, defining cascades, and setting API keys:
+
+```sh
+llm-cascade setup --interactive
+```
+
+### Key management
+
+**Store an API key** (prompts with hidden input):
+
+```sh
+llm-cascade key set openai
+```
+
+**Retrieve an API key** (masked by default; use `--show-full` to reveal):
+
+```sh
+llm-cascade key get openai
+llm-cascade key get openai --show-full
+```
+
+**List key status** for all providers (checks both keyring and env vars):
+
+```sh
+llm-cascade key list
+```
+
+**Delete an API key** from the keyring:
+
+```sh
+llm-cascade key delete openai
 ```
 
 ### Output
@@ -240,26 +301,13 @@ llm-cascade -c /path/to/my/config.toml -C fast_task -p "Hello"
 - **Tool call responses** are printed as pretty JSON to stdout.
 - **Errors** (including `CascadeError` with the `.json` file path) are printed to stderr with exit code 1.
 
-### All options
-
-```
-Usage: llm-cascade [OPTIONS] --cascade <CASCADE>
-
-Options:
-  -C, --cascade <CASCADE>  Name of the cascade to use (defined in config)
-  -p, --prompt <PROMPT>    Text prompt to send
-  -f, --file <FILE>        Path to a JSON file containing the conversation
-  -c, --config <CONFIG>    Path to config file (default: ~/.config/llm-cascade/config.toml)
-  -h, --help               Print help
-```
-
 ### Verbosity
 
 Control log output via the `RUST_LOG` environment variable:
 
 ```sh
-RUST_LOG=debug llm-cascade -C creative_task -p "Hello"
-RUST_LOG=llm_cascade=trace llm-cascade -C creative_task -p "Hello"
+RUST_LOG=debug llm-cascade run -C creative_task -p "Hello"
+RUST_LOG=llm_cascade=trace llm-cascade run -C creative_task -p "Hello"
 ```
 
 ---

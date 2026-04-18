@@ -33,6 +33,9 @@ pub mod providers;
 pub mod secrets;
 
 pub use cascade::run_cascade;
-pub use config::{load_config, AppConfig, CascadeConfig, CascadeEntry, DatabaseConfig, FailureConfig, ProviderConfig, ProviderType};
+pub use config::{
+    AppConfig, CascadeConfig, CascadeEntry, DatabaseConfig, FailureConfig, ProviderConfig,
+    ProviderType, load_config,
+};
 pub use error::{CascadeError, ProviderError};
 pub use models::{ContentBlock, Conversation, LlmResponse, Message, MessageRole, ToolDefinition};

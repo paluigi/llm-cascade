@@ -1,7 +1,7 @@
 //! SQLite-backed persistence for attempt logs and cooldown state.
 
 use chrono::Utc;
-use rusqlite::{params, Connection};
+use rusqlite::{Connection, params};
 
 use crate::config::expand_tilde;
 
